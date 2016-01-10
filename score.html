@@ -1,0 +1,446 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>FRC Stronghold 2016 Score Calculator</title>
+<style type="text/css">
+/*number inputs*/
+input[type="number"] {
+width:50px; height:30px; 
+text-align:center; 
+margin:3px; 
+float:left;}
+
+/*select and equals elements*/
+select, .equals {
+margin:3px; 
+float:left;}
+
+/*output element*/
+output {
+display:block; 
+border:1px solid #333333; 
+border-radius:5px; 
+min-width:25px; height:25px; 
+margin:3px; padding:2px;
+text-align:center; 
+background:#000000; 
+color:#ffffff; 
+float:left; }
+</style>
+
+<script type="text/javascript">
+
+// This function caluclates the current tower strength.
+// Tower strength range [0-8]
+// Returns current tower strength.
+function calcTowerStrength()
+{
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Ouput Field
+	var tower = form.elements["towerStrength"];
+
+	// Get Field Values
+	var lowBoulderTele 	 	= parseInt(form.elements["lowBoulderTele"].value);
+	var lowBoulderAlliance 	= parseInt(form.elements["lowBoulderAlliance"].value);
+	var highBoulderTele  	= parseInt(form.elements["highBoulderTele"].value);
+	var highBoulderAlliance = parseInt(form.elements["highBoulderAlliance"].value);
+
+	var boulderCount = lowBoulderTele + lowBoulderAlliance + highBoulderTele + highBoulderAlliance;
+	var strength = 8 - boulderCount;
+	
+	if (strength < 0) {
+		strenght = 0;
+		tower.value = "0";
+	} else {
+		tower.value = strength;
+	}
+
+	return strength;
+}
+
+// This function updates the output text fields
+function updateOutput() { 
+		
+	// Get form
+	var form = document.getElementById("calc");
+		
+	// Get output
+	var out = form.elements["totalScore"];
+	
+	// Get Values from the table
+	var reachDefenceAuto 	= parseInt(form.elements["reachDefenceAuto"].value);
+	var lowBoulderAuto 	 	= parseInt(form.elements["lowBoulderAuto"].value);
+	var lowBoulderTele 	 	= parseInt(form.elements["lowBoulderTele"].value);
+	var lowBoulderAlliance	= parseInt(form.elements["lowBoulderAlliance"].value);
+	var highBoulderAuto	 	= parseInt(form.elements["highBoulderAuto"].value);
+	var highBoulderTele  	= parseInt(form.elements["highBoulderTele"].value);
+	var highBoulderAlliance	= parseInt(form.elements["highBoulderAlliance"].value);
+	var challengeTele    	= parseInt(form.elements["challengeTele"].value);
+	var scaleTele        	= parseInt(form.elements["scaleTele"].value);
+	var crossDefenceAuto = parseInt(form.elements["crossDefenceAuto"].value);
+
+	// Calculate Points
+	var reachDefence;
+	if (reachDefenceAuto > 1) {
+		reachDefence = 2;
+	} else {
+		reachDefence = (reachDefenceAuto * 2);
+	}
+
+	var crossDefence;
+	if (crossDefenceAuto > 1) {
+		crossDefence = calcDefenceDamage() * 10 + 10; 
+	} else {
+		crossDefence = calcDefenceDamage() * 5 + (crossDefenceAuto * 10); 
+	}
+
+	var lowBoulder   = (lowBoulderAuto * 5) + (lowBoulderTele * 2);
+	var highBoulder  = (highBoulderAuto * 10) + (highBoulderTele * 5);
+	var challenge = (challengeTele * 5);
+	var scale = (scaleTele * 15);
+
+	// Set Output Fields
+	out.value = reachDefence + crossDefence + lowBoulder + highBoulder + challenge + scale;
+
+	var towerStrength = calcTowerStrength();
+
+	calcCapture(towerStrength);
+}
+
+function calcReachingDefence()
+{	
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Inputs
+	var reachDefenceAuto 		= parseInt(form.elements["reachDefenceAuto"].value);
+	var reachDefenceAlliance	= parseInt(form.elements["reachDefenceAlliance"].value);
+	var crossDefenceAuto		= parseInt(form.elements["crossDefenceAuto"].value);
+
+	var reached = reachDefenceAuto + reachDefenceAlliance;
+
+	if (reached > 1) {
+		if (crossDefenceAuto > 0) {
+			return false;
+		} else {
+			return true;
+		}
+	} else {
+		return false;
+	}
+}
+
+// This function calculates the state of the defences.
+// Return value is number of defencive damage done.
+function calcDefenceDamage()
+{
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Ouput Box
+	var defence = form.elements["defenceDamage"];
+	var breach = form.elements["breachOutput"];
+
+	// Get Input Values
+	var crossDefenceTele = parseInt(form.elements["crossDefenceTele"].value);
+	var crossDefenceAlliance = parseInt(form.elements["crossDefenceAlliance"].value);
+
+	var damage = crossDefenceTele + crossDefenceAlliance;
+	
+	if (damage > 10) {
+		defence.value = "10";
+		return 10 - crossDefenceAlliance;
+	} else if (damage >= 8) {
+		defence.value = damage;
+		breach.value = "YES";
+		return damage - crossDefenceAlliance;
+	} else {
+		defence.value = damage;
+		breach.value = "NO";
+		return damage - crossDefenceAlliance;
+	}
+}
+
+// This function validates the inputs for the Reaching a Defence field.
+function validateReachingDefence(t) 
+{
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Inputs
+	var reachDefenceAuto 		= parseInt(form.elements["reachDefenceAuto"].value);
+	var crossDefenceAuto		= parseInt(form.elements["crossDefenceAuto"].value);
+
+	if (crossDefenceAuto > 0) {
+		t.value = "0";
+	}
+
+	updateOutput()	
+}
+
+// This function validates the inputs for the Reaching a Defence field.
+function validateCrossAuto(t) 
+{
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Inputs
+	var reachDefenceAuto = parseInt(form.elements["reachDefenceAuto"].value);
+	var crossDefenceAuto = parseInt(form.elements["crossDefenceAuto"].value);
+
+	if (crossDefenceAuto > 0) {
+		if (reachDefenceAuto > 0) {
+			form.elements["reachDefenceAuto"].value = "0";
+		}
+	}
+	updateOutput();
+}
+
+// This function validates the inputs for the Reaching a Defence field.
+function validateCross(t) 
+{
+	if (t.value < 0)
+		t.value = "0";
+
+	updateOutput();
+}
+
+// This function validates the text form for the CHALLENGE input.
+// Since a Challenge occurs when the robot hasn't scaled the tower
+// we need to modify the Scale value appropriately.
+function validateChallenge(t) {
+
+	var form = document.getElementById("calc");
+	scale = form.elements["scaleTele"];
+	scaleValue = parseInt(scale.value);
+
+	if (t.value < 0) {
+		t.value = "0";
+	} 
+	else if (t.value == 1) {
+		if (scaleValue > 0) {
+			t.value = "1";
+			scale.value = "0";
+		}
+	}
+	else if (t.value > 1) {
+		t.value = "1";
+	}
+
+	updateOutput();
+}
+
+// This function validates the text form for the SCALE input.
+// When a robot SCALES the tower they lose the points for challenge
+// and gain the 15 for scaling.
+function validateScale(t) {
+
+	var form = document.getElementById("calc");
+	challenge = form.elements["challengeTele"];
+	challengeValue = parseInt(challenge.value);
+
+	if (t.value < 0) {
+		t.value = "0";
+	}
+	else if (t.value == 1) {
+		if (challengeValue > 0) {
+			t.value = "1";
+			challenge.value = "0";
+		}
+	}
+	else if (t.value > 1) {
+		t.value = "1";
+	}
+
+	updateOutput();
+}
+
+// This function validates the input of the SCALE of the allicance member input.
+function validateScaleAlliance(t)
+{
+	if (t.value < 0) {
+		t.value = "0";
+	} else if (t.value > 2) {
+		t.value = "2";
+	}
+
+	updateOutput();
+}
+
+// This function validates the input of the CHALLENGE of the allicance member input.
+function validateChallengeAlliance(t)
+{
+	if (t.value < 0) {
+		t.value = "0";
+	} else if (t.value > 2) {
+		t.value = "2";
+	}
+	
+	updateOutput();
+}
+
+// This functions verifies if we have achieved the CAPTURE action.
+function calcCapture(towerStrength)
+{
+	// Get Form
+	var form = document.getElementById("calc");
+
+	// Get Output
+	capture = form.elements["captureOutput"];
+
+	// Get Inputs
+	challengeTele = parseInt(form.elements["challengeTele"].value);
+	challengeAlliance = parseInt(form.elements["challengeAlliance"].value);
+	scaleTele = parseInt(form.elements["scaleTele"].value);
+	scaleAlliance = parseInt(form.elements["scaleAlliance"].value);
+
+	// We can only capture once the tower strength is 0.
+	if (towerStrength > 0) {
+		return false;
+	}
+
+	var count = challengeTele + challengeAlliance + scaleTele + scaleAlliance;
+
+	if (count >= 3) {
+		capture.value = "YES";
+	} else {
+		capture.value = "NO";
+	}
+}
+
+// This function validates the text form for the Boulder low/high fields.
+// Value can't be lower then 0.
+function validateBoulder(t) {
+
+	if (t.value < 0) {
+		t.value = "0";
+	}
+
+	updateOutput();
+}
+
+</script>
+</head>
+
+<body>
+
+<p>This is a calculator the FRC Stronghold competition. Count how many actions are taken by the robot and see what the final score would be.</p>
+
+<form id="calc" >
+<table width="800" border="1">
+  <tr>
+    <td valign="middle"><strong>Action</strong></td>
+    <td valign="middle"><strong>AUTO</strong></td>
+    <td valign="middle"><strong>TELEOP</strong></td>
+    <td valign="middle">&nbsp;</td>
+    <td valign="middle"><strong>Qual.</strong></td>
+    <td valign="middle"><strong>Playoff</strong></td>
+    <td valign="middle"><strong>Other Teams</strong></td>
+  </tr>
+  <tr>
+    <td valign="middle">REACHING a DEFENCE</td>
+    <td><input name="reachDefenceAuto"  oninput="validateReachingDefence(this)" min="0" max="1" type="number" value="0" />
+      *2</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle"><input name="reachDefenceAlliance" oninput="validateReachingDefence(this)" type="number" min="0" max="2" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">CROSSING an UNDAMAGED DEFENCE</td>
+    <td valign="middle"><input name="crossDefenceAuto" oninput="validateCrossAuto(this)" min="0" max="1" type="number" value="0" />
+      *10</td>
+    <td valign="middle"><input name="crossDefenceTele" oninput="validateCross(this)" type="number" min="0" max="10" value="0" />*5</td>
+    <td valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="crossDefenceAlliance" oninput="validateCross(this)" type="number" min="0" max="10" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">BOULDER in Low TOWER GOAL</td>
+    <td valign="middle"><input name="lowBoulderAuto" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" />
+      *5</td>
+    <td valign="middle"><input name="lowBoulderTele" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" />*2</td>
+    <td valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="lowBoulderAlliance" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">BOULDER in High TOWER GOAL</td>
+    <td valign="middle"><input name="highBoulderAuto" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" />*10</td>
+    <td valign="middle"><input name="highBoulderTele" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" />*5</td>
+    <td valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="highBoulderAlliance" oninput="validateBoulder(this)" type="number" min="0" max="99" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">CHALLENGE (per ROBOT)</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="challengeTele" oninput="validateChallenge(this)" type="number" min="0" max="1" value="0" />*5</td>
+    <td valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="challengeAlliance" oninput="validateChallengeAlliance(this)" type="number" min="0" max="2" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">SCALE (per ROBOT)</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="scaleTele" oninput="validateScale(this)" type="number" min="0" max="1" value="0" />*15</td>
+    <td valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td valign="middle"><input name="scaleAlliance" oninput="validateScaleAlliance(this)" type="number" min="0" max="2" value="0" /></td>
+  </tr>
+  <tr>
+    <td valign="middle">BREACH</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">1 RP</td>
+    <td align="center" valign="middle">20</td>
+    <td align="center" valign="middle">&nbsp;</td>
+  </tr>
+  <tr>
+    <td valign="middle">CAPTURE</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">-</td>
+    <td align="center" valign="middle">&nbsp;</td>
+    <td align="center" valign="middle">1 RP</td>
+    <td align="center" valign="middle">25</td>
+    <td align="center" valign="middle">&nbsp;</td>
+  </tr>
+</table>
+
+<p></p>
+<table width="600" border="1">
+  <tr>
+    <td>Tower Strength</td>
+    <td><output name="towerStrength" for="x y">8</output></td>
+    <td>Defences Damaged</td>
+    <td><output name="defenceDamage" for="x y">0</output></td>
+  </tr>
+  <tr>
+    <td>BREACH</td>
+    <td><output name="breachOutput" for="x y">NO</output></td>
+    <td>CAPTURE</td>
+    <td><output name="captureOutput" for="x y">NO</output></td>
+  </tr>
+</table>
+<p></p>
+<table width="200" border="1">
+  <tr>
+    <td>Total Score</td>
+    <td><output name="totalScore" for="x y">0</output></td>
+  </tr>
+</table>
+</form>
+<p>&nbsp;</p>
+</body>
+</html>
+
